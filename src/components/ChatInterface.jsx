@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 
-function ChatInterface({ subject, apiKey }) {
-  const [messages, setMessages] = useState([
+function ChatInterface({ subject }) {
+  const [messages, setMessages] = useState([])
+  const [displayMessages, setDisplayMessages] = useState([
     {
       role: 'system',
       content: `Welcome! I'm your ${subject.name} tutor. Ask me anything!`,
@@ -17,7 +18,7 @@ function ChatInterface({ subject, apiKey }) {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [displayMessages])
 
   const sendMessage = async (e) => {
     e.preventDefault()
@@ -25,60 +26,43 @@ function ChatInterface({ subject, apiKey }) {
 
     const userMessage = input.trim()
     setInput('')
-    setMessages((prev) => [...prev, { role: 'user', content: userMessage }])
+
+    const newMessages = [...messages, { role: 'user', content: userMessage }]
+    setMessages(newMessages)
+    setDisplayMessages((prev) => [...prev, { role: 'user', content: userMessage }])
     setIsLoading(true)
 
     try {
-      const systemPrompt = `You are an expert ${subject.name} tutor. Your role is to help students learn ${subject.name} concepts in an engaging and educational way.
-
-Guidelines:
-- Explain concepts clearly and simply
-- Use examples and analogies when helpful
-- Break down complex topics into digestible parts
-- Encourage curiosity and questions
-- Correct misconceptions gently
-- Adapt your explanations to the student's level
-
-Subject focus: ${subject.name} - ${subject.description}`
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...messages
-              .filter((m) => m.role !== 'system')
-              .map((m) => ({ role: m.role, content: m.content })),
-            { role: 'user', content: userMessage },
-          ],
-          max_tokens: 1000,
-          temperature: 0.7,
+          messages: newMessages,
+          subject: subject,
         }),
       })
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error?.message || 'Failed to get response')
+        throw new Error(error.error || 'Failed to get response')
       }
 
       const data = await response.json()
-      const assistantMessage = data.choices[0].message.content
+      const assistantMessage = data.message
 
-      setMessages((prev) => [
+      setMessages((prev) => [...prev, { role: 'assistant', content: assistantMessage }])
+      setDisplayMessages((prev) => [
         ...prev,
         { role: 'assistant', content: assistantMessage },
       ])
     } catch (error) {
-      setMessages((prev) => [
+      setDisplayMessages((prev) => [
         ...prev,
         {
           role: 'system',
-          content: `Error: ${error.message}. Please check your API key and try again.`,
+          content: `Error: ${error.message}. Please try again.`,
         },
       ])
     } finally {
@@ -94,7 +78,7 @@ Subject focus: ${subject.name} - ${subject.description}`
         </h2>
       </div>
       <div className="messages">
-        {messages.map((message, index) => (
+        {displayMessages.map((message, index) => (
           <div key={index} className={`message ${message.role}`}>
             {message.content}
           </div>
