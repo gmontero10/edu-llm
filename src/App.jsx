@@ -1,27 +1,38 @@
 import { useState } from 'react'
-import SubjectCarousel from './components/SubjectCarousel'
+import HeroSection from './components/HeroSection'
 import ChatInterface from './components/ChatInterface'
+import './styles/hero-section.css'
 
 function App() {
   const [selectedSubject, setSelectedSubject] = useState(null)
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
   const handleSubjectSelect = (subject) => {
-    setSelectedSubject(subject)
+    setIsTransitioning(true)
+    // Small delay for transition effect
+    setTimeout(() => {
+      setSelectedSubject(subject)
+      setIsTransitioning(false)
+    }, 300)
   }
 
   const handleBack = () => {
-    setSelectedSubject(null)
+    setIsTransitioning(true)
+    setTimeout(() => {
+      setSelectedSubject(null)
+      setIsTransitioning(false)
+    }, 300)
   }
 
   return (
-    <div className="app">
+    <div className={`app ${isTransitioning ? 'transitioning' : ''}`}>
       <a href="#main-content" className="skip-link">
         Skip to main content
       </a>
-      <header className="header" role="banner">
-        <h1>EduLLM</h1>
-        <p>AI-Powered Learning Assistant</p>
-        {selectedSubject && (
+      {selectedSubject && (
+        <header className="header" role="banner">
+          <h1>EduLLM</h1>
+          <p>AI-Powered Learning Assistant</p>
           <button
             className="back-button"
             onClick={handleBack}
@@ -30,11 +41,11 @@ function App() {
             <span className="arrow" aria-hidden="true">←</span>
             Back to Subjects
           </button>
-        )}
-      </header>
-      <main className="main" role="main" id="main-content">
+        </header>
+      )}
+      <main className={`main ${!selectedSubject ? 'main-hero' : ''}`} role="main" id="main-content">
         {!selectedSubject ? (
-          <SubjectCarousel onSelect={handleSubjectSelect} />
+          <HeroSection onSelect={handleSubjectSelect} />
         ) : (
           <ChatInterface subject={selectedSubject} />
         )}

@@ -1,5 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
+import { Canvas } from '@react-three/fiber'
 import ReactMarkdown from 'react-markdown'
+import { getCharacterById } from '../utils/characterData'
+import ChatAvatar from './ChatAvatar'
 
 function formatTime(date) {
   return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
@@ -7,10 +10,12 @@ function formatTime(date) {
 
 function ChatInterface({ subject }) {
   const [messages, setMessages] = useState([])
+  const character = getCharacterById(subject.id)
+  const greeting = character?.greeting || `Welcome! I'm your ${subject.name} tutor. Ask me anything!`
   const [displayMessages, setDisplayMessages] = useState([
     {
       role: 'system',
-      content: `Welcome! I'm your ${subject.name} tutor. Ask me anything!`,
+      content: greeting,
       timestamp: new Date(),
     },
   ])
@@ -94,9 +99,22 @@ function ChatInterface({ subject }) {
 
   return (
     <div className="chat-container" role="region" aria-label={`Chat with ${subject.name} tutor`}>
-      <div className="chat-header">
+      <div className="chat-header chat-header-with-avatar">
+        {character && (
+          <div className="chat-avatar-container">
+            <Canvas
+              camera={{ position: [0, 0.3, 2], fov: 40 }}
+              gl={{ antialias: true, alpha: true }}
+            >
+              <Suspense fallback={null}>
+                <ChatAvatar character={character} />
+              </Suspense>
+            </Canvas>
+          </div>
+        )}
         <h2>
           <span aria-hidden="true">{subject.icon}</span> Learning <span>{subject.name}</span>
+          {character && <small style={{ display: 'block', fontSize: '0.7em', opacity: 0.7 }}>with {character.character}</small>}
         </h2>
       </div>
       <div className="messages" role="log" aria-live="polite" aria-label="Chat messages">
