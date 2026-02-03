@@ -17,7 +17,7 @@ export const characters = [
     hasModel: true,
     modelScale: 2.5,
     modelPosition: [0, 0, 0],
-    modelRotation: [0, 0, 0],
+    modelRotation: [0, Math.PI / 2, 0],
     geometryType: 'scientist', // Fallback
   },
   {
