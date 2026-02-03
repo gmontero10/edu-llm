@@ -339,14 +339,88 @@ a:focus:not(:focus-visible) {
   padding: var(--space-md) var(--space-lg);
   background: var(--bg-glass);
   border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.chat-header-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
 }
 
 .chat-header h2 {
   font-size: 1.2rem;
+  margin: 0;
 }
 
 .chat-header span {
   color: var(--color-primary);
+}
+
+/* Level Badge */
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  animation: badgeAppear 0.3s ease-out;
+}
+
+@keyframes badgeAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.level-badge.level-beginner {
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  color: #052e16;
+}
+
+.level-badge.level-intermediate {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #451a03;
+}
+
+.level-badge.level-advanced {
+  background: linear-gradient(135deg, #f472b6, #ec4899);
+  color: #500724;
+}
+
+/* Start Fresh Button */
+.start-fresh-button {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.start-fresh-button:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.start-fresh-button:focus-visible {
+  box-shadow: var(--focus-ring);
 }
 
 /* Messages Container */
@@ -870,5 +944,24 @@ a:focus:not(:focus-visible) {
 
   .chat-header h2 {
     font-size: 1rem;
+  }
+
+  .chat-header {
+    flex-wrap: wrap;
+  }
+
+  .chat-header-content {
+    order: 2;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .start-fresh-button {
+    order: 3;
+  }
+
+  .level-badge {
+    font-size: 0.7rem;
+    padding: 2px var(--space-xs);
   }
 }
