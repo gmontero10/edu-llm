@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import HeroSection from './components/HeroSection'
-import ChatInterface from './components/ChatInterface'
+import LearningJourney from './components/LearningJourney'
 import './styles/hero-section.css'
 
 function App() {
@@ -47,7 +47,7 @@ function App() {
         {!selectedSubject ? (
           <HeroSection onSelect={handleSubjectSelect} />
         ) : (
-          <ChatInterface subject={selectedSubject} />
+          <LearningJourney subject={selectedSubject} onBack={handleBack} />
         )}
       </main>
     </div>

@@ -4,7 +4,7 @@ const STORAGE_KEY_PREFIX = 'learningJourney_'
 
 /**
  * Hook to manage the learning journey state for a subject
- * Handles intro → diagnosis → learning flow with localStorage persistence
+ * Handles intro → quiz → learning flow with localStorage persistence
  */
 export function useLearningJourney(subjectId) {
   const storageKey = `${STORAGE_KEY_PREFIX}${subjectId}`
@@ -29,9 +29,9 @@ export function useLearningJourney(subjectId) {
   // Initialize state based on whether user has a saved level
   const [journeyState, setJourneyState] = useState(() => ({
     stage: isReturningUser ? 'learning' : 'intro',
-    diagnosticTurn: 0,
+    quizAnswers: [],
+    currentQuestion: 0,
     level: savedLevel,
-    levelConfidence: isReturningUser ? 1 : 0,
   }))
 
   // Save level to localStorage when it changes
@@ -51,38 +51,32 @@ export function useLearningJourney(subjectId) {
     }
   }, [journeyState.level, storageKey])
 
-  // Transition from intro to diagnosing (called after user sends first message)
-  const startDiagnosis = useCallback(() => {
+  // Transition from intro to quiz
+  const startQuiz = useCallback(() => {
     setJourneyState((prev) => ({
       ...prev,
-      stage: 'diagnosing',
-      diagnosticTurn: 1,
+      stage: 'quiz',
+      currentQuestion: 0,
+      quizAnswers: [],
     }))
   }, [])
 
-  // Process diagnostic metadata from AI response
-  const processDiagnosticResponse = useCallback((metadata) => {
-    setJourneyState((prev) => {
-      const newTurn = prev.diagnosticTurn + 1
-      const shouldComplete =
-        metadata.confidence >= 0.7 || newTurn >= 5
+  // Record an answer and advance to next question
+  const answerQuestion = useCallback((answerLevel) => {
+    setJourneyState((prev) => ({
+      ...prev,
+      quizAnswers: [...prev.quizAnswers, answerLevel],
+      currentQuestion: prev.currentQuestion + 1,
+    }))
+  }, [])
 
-      if (shouldComplete) {
-        return {
-          ...prev,
-          stage: 'learning',
-          diagnosticTurn: newTurn,
-          level: metadata.suggestedLevel,
-          levelConfidence: metadata.confidence,
-        }
-      }
-
-      return {
-        ...prev,
-        diagnosticTurn: newTurn,
-        levelConfidence: metadata.confidence,
-      }
-    })
+  // Complete the quiz and transition to learning
+  const completeQuiz = useCallback((calculatedLevel) => {
+    setJourneyState((prev) => ({
+      ...prev,
+      stage: 'learning',
+      level: calculatedLevel,
+    }))
   }, [])
 
   // Reset journey to start fresh
@@ -94,41 +88,42 @@ export function useLearningJourney(subjectId) {
     }
     setJourneyState({
       stage: 'intro',
-      diagnosticTurn: 0,
+      quizAnswers: [],
+      currentQuestion: 0,
       level: null,
-      levelConfidence: 0,
     })
   }, [storageKey])
 
   return {
     ...journeyState,
     isReturningUser,
-    startDiagnosis,
-    processDiagnosticResponse,
+    startQuiz,
+    answerQuestion,
+    completeQuiz,
     resetJourney,
   }
 }
 
 /**
- * Parse diagnostic metadata from AI response
- * Returns { content, metadata } where metadata may be null
+ * Calculate the user's level based on quiz answers
+ * Each answer is tagged with difficulty: beginner=1, intermediate=2, advanced=3
+ * Average score determines final level
  */
-export function parseDiagnosticMetadata(response) {
-  const metadataRegex = /<!--DIAGNOSTIC:(.*?)-->/s
-  const match = response.match(metadataRegex)
+export function calculateLevel(answers) {
+  if (!answers || answers.length === 0) return 'beginner'
 
-  if (!match) {
-    return { content: response, metadata: null }
+  const levelScores = {
+    beginner: 1,
+    intermediate: 2,
+    advanced: 3,
   }
 
-  try {
-    const metadata = JSON.parse(match[1])
-    const content = response.replace(metadataRegex, '').trim()
-    return { content, metadata }
-  } catch (e) {
-    console.error('Error parsing diagnostic metadata:', e)
-    return { content: response, metadata: null }
-  }
+  const totalScore = answers.reduce((sum, level) => sum + (levelScores[level] || 1), 0)
+  const avgScore = totalScore / answers.length
+
+  if (avgScore < 1.5) return 'beginner'
+  if (avgScore <= 2.5) return 'intermediate'
+  return 'advanced'
 }
 
 export default useLearningJourney

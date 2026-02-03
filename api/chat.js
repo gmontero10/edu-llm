@@ -59,45 +59,6 @@ function buildSystemPrompt(subject, journeyState) {
 
 Subject focus: ${subject.name} - ${subject.description}`;
 
-  // Diagnostic stage - AI is assessing student's knowledge
-  if (journeyState?.stage === 'diagnosing') {
-    const turnInfo = journeyState.diagnosticTurn || 1;
-    const minTurns = 2;
-    const maxTurns = 5;
-
-    return `${basePrompt}
-
-CURRENT MODE: DIAGNOSTIC ASSESSMENT (Turn ${turnInfo} of max ${maxTurns})
-
-You are currently assessing the student's knowledge level through natural conversation. Your goals:
-1. Ask probing questions that reveal their understanding
-2. Gauge their familiarity with key concepts
-3. Note their vocabulary and comfort with terminology
-4. Assess whether they're beginner, intermediate, or advanced
-
-LEVEL DEFINITIONS:
-- beginner: New to the subject, needs fundamentals explained simply, benefits from analogies
-- intermediate: Understands basics, ready for more complex concepts and connections
-- advanced: Strong foundation, can handle sophisticated ideas and mathematical rigor
-
-CONVERSATION GUIDELINES:
-- Be encouraging and curious about their perspective
-- Ask follow-up questions based on their responses
-- Don't quiz them mechanically - have a natural conversation
-- ${turnInfo < minTurns ? 'Continue gathering information before making a confident assessment.' : 'You may complete the assessment if you feel confident about their level.'}
-
-REQUIRED: After EVERY response, you MUST include diagnostic metadata in this exact format at the very end:
-<!--DIAGNOSTIC:{"confidence":X.X,"suggestedLevel":"beginner|intermediate|advanced","topicsAssessed":["topic1","topic2"]}-->
-
-Where:
-- confidence: 0.0 to 1.0 (how sure you are about the level)
-- suggestedLevel: your current best guess
-- topicsAssessed: concepts you've been able to evaluate
-
-When confidence reaches 0.7+ OR this is turn ${maxTurns}, naturally transition by saying something like:
-"Based on our conversation, I can see you have [description of their level]. Let me tailor our learning journey accordingly..."`;
-  }
-
   // Learning stage - personalized tutoring at diagnosed level
   if (journeyState?.stage === 'learning' && journeyState?.level) {
     const levelGuidelines = {
@@ -142,7 +103,7 @@ General Guidelines:
 - Build progressively on what they learn`;
   }
 
-  // Default/fallback prompt (intro stage or missing state)
+  // Default/fallback prompt
   return `${basePrompt}
 
 Guidelines:
