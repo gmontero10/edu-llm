@@ -1,8 +1,9 @@
-import { useState, useEffect, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import ChatAvatar from './ChatAvatar'
 import { getCharacterById } from '../utils/characterData'
 import { calculateLevel } from '../hooks/useLearningJourney'
+import GLBCharacter from './HeroSection/GLBCharacter'
+import ChatAvatar from './ChatAvatar'
 
 /**
  * Game-like multiple choice quiz with tutor on left, questions on right
@@ -66,11 +67,11 @@ function DiagnosticQuiz({ subject, onComplete }) {
       <div className="quiz-tutor-panel">
         <div className="quiz-tutor-character">
           <Canvas
-            camera={{ position: [0, 0.5, 3], fov: 35 }}
+            camera={{ position: [0, 1, 4], fov: 35 }}
             gl={{ antialias: true, alpha: true }}
           >
             <Suspense fallback={null}>
-              <QuizTutor character={character} isThinking={showFeedback} />
+              <QuizTutor character={character} />
             </Suspense>
           </Canvas>
         </div>
@@ -127,25 +128,25 @@ function DiagnosticQuiz({ subject, onComplete }) {
 }
 
 /**
- * Tutor character for the quiz with thinking animation
+ * Tutor character for the quiz
  */
-function QuizTutor({ character, isThinking }) {
+function QuizTutor({ character }) {
+  const hasGLBModel = character?.hasModel && character?.modelPath
+
   return (
-    <group scale={1.5}>
+    <group>
       {/* Lighting */}
-      <ambientLight intensity={0.4} />
+      <ambientLight intensity={0.5} />
       <directionalLight position={[2, 3, 2]} intensity={0.8} />
       <pointLight position={[-2, 2, 2]} intensity={0.4} color={character?.themeColor} />
 
-      {/* Avatar */}
-      <ChatAvatar character={character} />
-
-      {/* Thinking indicator */}
-      {isThinking && (
-        <mesh position={[0.4, 0.6, 0]}>
-          <sphereGeometry args={[0.08, 16, 16]} />
-          <meshBasicMaterial color={character?.themeColor} />
-        </mesh>
+      {/* Character - use GLB if available, otherwise ChatAvatar */}
+      {hasGLBModel ? (
+        <GLBCharacter character={character} isSelected={false} isHovered={false} />
+      ) : (
+        <group scale={1.5}>
+          <ChatAvatar character={character} />
+        </group>
       )}
     </group>
   )

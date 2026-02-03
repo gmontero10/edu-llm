@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import ReactMarkdown from 'react-markdown'
 import { getCharacterById } from '../utils/characterData'
+import GLBCharacter from './HeroSection/GLBCharacter'
 import ChatAvatar from './ChatAvatar'
 
 function formatTime(date) {
@@ -146,7 +147,7 @@ function ChatInterface({ subject, level, onStartFresh, isReturningUser }) {
       <div className="tutor-panel">
         <div className="tutor-panel-character">
           <Canvas
-            camera={{ position: [0, 0.5, 3], fov: 35 }}
+            camera={{ position: [0, 1, 4], fov: 35 }}
             gl={{ antialias: true, alpha: true }}
           >
             <Suspense fallback={null}>
@@ -251,18 +252,26 @@ function ChatInterface({ subject, level, onStartFresh, isReturningUser }) {
 }
 
 /**
- * Tutor character for the side panel
+ * Tutor character for the side panel - uses GLB model if available
  */
 function TutorPanelCharacter({ character }) {
+  const hasGLBModel = character?.hasModel && character?.modelPath
+
   return (
-    <group scale={1.3}>
+    <group>
       {/* Lighting */}
-      <ambientLight intensity={0.4} />
+      <ambientLight intensity={0.5} />
       <directionalLight position={[2, 3, 2]} intensity={0.8} />
       <pointLight position={[-2, 2, 2]} intensity={0.4} color={character?.themeColor} />
 
-      {/* Avatar */}
-      <ChatAvatar character={character} />
+      {/* Character - use GLB if available, otherwise ChatAvatar */}
+      {hasGLBModel ? (
+        <GLBCharacter character={character} isSelected={false} isHovered={false} />
+      ) : (
+        <group scale={1.3}>
+          <ChatAvatar character={character} />
+        </group>
+      )}
     </group>
   )
 }
