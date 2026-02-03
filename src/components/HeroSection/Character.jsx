@@ -1,6 +1,7 @@
-import { useRef } from 'react'
+import { useRef, Suspense } from 'react'
 import { useFrame } from '@react-three/fiber'
 import PlaceholderCharacter from './PlaceholderCharacter'
+import GLBCharacter from './GLBCharacter'
 
 /**
  * Individual character wrapper with pedestal
@@ -63,12 +64,30 @@ function Character({
 
       {/* Character on pedestal */}
       <group position={[0, 0.35, 0]}>
-        <PlaceholderCharacter
-          character={character}
-          isSelected={isSelected}
-          isHovered={isHovered}
-          reducedMotion={reducedMotion}
-        />
+        {character.hasModel ? (
+          <Suspense fallback={
+            <PlaceholderCharacter
+              character={character}
+              isSelected={isSelected}
+              isHovered={isHovered}
+              reducedMotion={reducedMotion}
+            />
+          }>
+            <GLBCharacter
+              character={character}
+              isSelected={isSelected}
+              isHovered={isHovered}
+              reducedMotion={reducedMotion}
+            />
+          </Suspense>
+        ) : (
+          <PlaceholderCharacter
+            character={character}
+            isSelected={isSelected}
+            isHovered={isHovered}
+            reducedMotion={reducedMotion}
+          />
+        )}
       </group>
 
       {/* Character spotlight */}

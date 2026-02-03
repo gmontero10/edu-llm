@@ -13,8 +13,12 @@ export const characters = [
     pedestalColor: '#0066aa',
     spotlightColor: '#00d4ff',
     greeting: 'Ah, curious mind! Let us explore the mysteries of the universe together.',
-    modelPath: '/models/einstein.glb', // Future: real model
-    geometryType: 'scientist', // For placeholder
+    modelPath: '/models/einstein.glb',
+    hasModel: true,
+    modelScale: 0.8,
+    modelPosition: [0, 0, 0],
+    modelRotation: [0, 0, 0],
+    geometryType: 'scientist', // Fallback
   },
   {
     id: 'mathematics',
