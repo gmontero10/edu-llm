@@ -266,7 +266,9 @@ function TutorPanelCharacter({ character }) {
 
       {/* Character - use GLB if available, otherwise ChatAvatar */}
       {hasGLBModel ? (
-        <GLBCharacter character={character} isSelected={false} isHovered={false} />
+        <group rotation={[0, Math.PI, 0]}>
+          <GLBCharacter character={character} isSelected={false} isHovered={false} />
+        </group>
       ) : (
         <group scale={1.3}>
           <ChatAvatar character={character} />
