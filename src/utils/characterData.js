@@ -15,7 +15,7 @@ export const characters = [
     greeting: 'Ah, curious mind! Let us explore the mysteries of the universe together.',
     modelPath: '/models/einstein.glb',
     hasModel: true,
-    modelScale: 0.8,
+    modelScale: 2.5,
     modelPosition: [0, 0, 0],
     modelRotation: [0, 0, 0],
     geometryType: 'scientist', // Fallback
